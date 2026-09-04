@@ -1,0 +1,15 @@
+# local user config (may contain API key) — never commit
+data/
+config.json
+
+# python
+__pycache__/
+*.py[cod]
+.venv/
+
+# misc build noise
+tools/_tmp/
+tools/_frames/
+tools/*_err.txt
+tools/_test_config.json
+tools/_live_config.json

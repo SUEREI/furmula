@@ -1,0 +1,5 @@
+PyQt5>=5.15
+requests>=2.31
+Pillow>=10.0
+pywin32>=306
+latex2mathml>=3.80
