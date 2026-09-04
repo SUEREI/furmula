@@ -52,7 +52,7 @@ def main():
         sfx=None,
     )
     events = []
-    controller.event.connect(events.append)
+    controller.note_event.connect(events.append)
     window.show()
     app.processEvents()
     time.sleep(0.6)

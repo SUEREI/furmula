@@ -126,7 +126,7 @@ class Harness:
             self.settings_dialog.setParent(self.window)
             self.controller._settings_dialog = self.settings_dialog
             self.settings_dialog.saved.connect(self.controller._apply_settings)
-        self.controller.event.connect(self.events.append)
+        self.controller.note_event.connect(self.events.append)
         self.controller.state_changed.connect(self.state_seen.append)
         self.window.show()
 
@@ -277,7 +277,7 @@ def main():
     check(h.controller.cfg.volume == 33, "volume applied")
     check(not h.controller.cfg.sound_enabled, "sound disabled applied")
     check(h.controller.cfg.api_key == "sk-applied", "key applied")
-    check(h.window.target_label.text() == "Word", "badge shows Word")
+    check(h.window.badge.text() == "Word", "badge shows Word")
     h.controller.shutdown()
 
     # ---- scenario H: sleeping does not listen ------------------------------

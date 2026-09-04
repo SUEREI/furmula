@@ -17,3 +17,5 @@ tools/_live_config.json
 # pyinstaller
 build/
 dist/
+
+使用示例.mp4

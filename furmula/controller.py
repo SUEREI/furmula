@@ -62,7 +62,9 @@ class Controller(QObject):
     """Owns the state machine, clipboard listener, recogniser jobs & SFX."""
 
     state_changed = pyqtSignal(str)      # sleeping | waiting | working
-    event = pyqtSignal(str)              # coarse instrumentation for self-tests
+    # NOTE: never name a pyqtSignal "event" — it shadows QObject.event() and
+    # every child-object event then raises "native Qt signal is not callable".
+    note_event = pyqtSignal(str)         # coarse instrumentation for self-tests
 
     def __init__(
         self,
@@ -316,7 +318,7 @@ class Controller(QObject):
         return self._thread is not None and self._thread.isRunning()
 
     def _note(self, msg: str):
-        self.event.emit(msg)
+        self.note_event.emit(msg)
 
     # ---------------------------------------------------------------- #
     @_guarded("shutdown")

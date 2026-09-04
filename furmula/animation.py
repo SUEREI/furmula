@@ -94,6 +94,14 @@ class ClipLibrary(QObject):
         self._thread.start()
 
     def _on_thread_finished(self):
+        if self._thread is not None:
+            try:
+                self._thread.loaded.disconnect()
+                self._thread.failed.disconnect()
+                self._thread.finished.disconnect()
+            except (TypeError, RuntimeError):
+                pass
+            self._thread.deleteLater()
         self._thread = None
         self._pump()
 
