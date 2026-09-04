@@ -21,6 +21,10 @@ class SfxPlayer(QObject):
     def _stop_current(self):
         if self._player is not None:
             try:
+                self._player.mediaStatusChanged.disconnect()
+            except (TypeError, RuntimeError):
+                pass
+            try:
                 self._player.stop()
             except Exception:
                 log_exc("audio.stop")
@@ -47,6 +51,11 @@ class SfxPlayer(QObject):
         try:
             # MediaStatus.EndOfMedia == 7
             if status == QMediaPlayer.EndOfMedia:
+                if self._player is not None:
+                    try:
+                        self._player.mediaStatusChanged.disconnect()
+                    except (TypeError, RuntimeError):
+                        pass
                 self._player = None
         except Exception:
             log_exc("audio.status")
