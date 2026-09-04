@@ -6,7 +6,6 @@ code tree), merged over the shipped defaults so older configs keep working.
 import dataclasses
 import json
 import os
-import re
 import tempfile
 
 from . import APP_NAME
@@ -91,13 +90,7 @@ class ConfigStore:
         self.path = path or os.path.join(_config_dir(), "config.json")
 
     def load(self) -> Config:
-        cfg = Config.from_dict(self._read_file())
-        if not cfg.api_key:
-            prefilled = read_external_deepseek_key()
-            if prefilled:
-                cfg.api_key = prefilled
-                self.save(cfg)
-        return cfg
+        return Config.from_dict(self._read_file())
 
     def save(self, cfg: Config) -> None:
         cfg.validate()
@@ -124,23 +117,3 @@ class ConfigStore:
         except Exception:
             return {}
 
-
-def read_external_deepseek_key() -> str:
-    """Best-effort first-run prefill from the local DSH credentials file.
-
-    Only runs when the config has no key yet; the value is stored in the
-    local config file and never printed or logged.
-    """
-    try:
-        p = os.path.join(os.path.expanduser("~"), ".dsh", ".credentials.yaml")
-        if not os.path.isfile(p):
-            return ""
-        with open(p, "r", encoding="utf-8") as f:
-            text = f.read()
-        m = re.search(
-            r"DEEPSEEK_API_KEY\s*:\s*[\"']?([A-Za-z0-9._\-]{8,})[\"']?",
-            text,
-        )
-        return m.group(1) if m else ""
-    except Exception:
-        return ""
