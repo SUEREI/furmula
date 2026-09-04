@@ -264,7 +264,8 @@ class Controller(QObject):
         self._finish_pending = True
         self._note("recognize:ok")
         if self.sfx is not None and self.cfg.sound_enabled:
-            self.sfx.play_random(self.cfg.volume)
+            # play the voice line a second after the result lands
+            QTimer.singleShot(2000, lambda: self._play_sfx_safe())
         self._request_boundary_stop()
 
     @_guarded("on_recognition_err")
@@ -272,6 +273,12 @@ class Controller(QObject):
         self._worker = None
         self._thread = None
         self._finish_with_error(reason)
+
+    def _play_sfx_safe(self):
+        try:
+            self.sfx.play_random(self.cfg.volume)
+        except Exception:
+            log_exc("controller.play_sfx")
 
     def _finish_with_error(self, reason: str):
         self._ignore_clipboard_until = _now() + 2.0

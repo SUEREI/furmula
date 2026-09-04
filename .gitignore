@@ -13,3 +13,7 @@ tools/_frames/
 tools/*_err.txt
 tools/_test_config.json
 tools/_live_config.json
+
+# pyinstaller
+build/
+dist/

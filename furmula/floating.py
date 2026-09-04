@@ -1,15 +1,13 @@
 """The desktop floating window (bottom-right pet) and its chrome.
 
 Clicking the main body toggles sleeping/waiting (the controller decides when
-that is legal); the ☰ chip in the bottom-right badge opens settings, the
-bottom-right badge itself shows the current formula target (LaTeX / Word).
-A right-click menu offers Settings / Quit.
+that is legal); the bottom-right badge shows the current formula target
+(LaTeX / Word). A right-click menu offers Settings / Quit.
 """
 from PyQt5.QtCore import QEvent, QPoint, Qt, pyqtSignal
-from PyQt5.QtGui import QColor, QPainter, QPen
+from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import (
     QApplication,
-    QHBoxLayout,
     QLabel,
     QMenu,
     QVBoxLayout,
@@ -25,42 +23,6 @@ MIN_WINDOW = 150
 MAX_WINDOW = 480
 MARGIN = 12            # gap from the work-area edge
 DRAG_THRESHOLD = 6     # px of movement before a press becomes a drag
-
-
-class SettingsButton(QWidget):
-    """Small ☰ chip drawn with three rounded lines."""
-
-    clicked = pyqtSignal()
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setFixedSize(30, 24)
-        self.setCursor(Qt.PointingHandCursor)
-        self.setToolTip("设置")
-
-    def paintEvent(self, _):
-        p = QPainter(self)
-        p.setRenderHint(QPainter.Antialiasing, True)
-        hover = self.underMouse()
-        if hover:
-            p.setBrush(QColor(255, 255, 255, 36))
-            p.setPen(Qt.NoPen)
-            p.drawRoundedRect(self.rect(), 7, 7)
-        pen = QPen(QColor(TEXT))
-        pen.setWidthF(1.8)
-        pen.setCapStyle(Qt.RoundCap)
-        p.setPen(pen)
-        w, h = self.width(), self.height()
-        for i, y in enumerate((h * 0.32, h * 0.5, h * 0.68)):
-            p.drawLine(int(w * 0.26), int(y), int(w * 0.74), int(y))
-        p.end()
-
-    def mouseReleaseEvent(self, event):
-        if event.button() == Qt.LeftButton and self.rect().contains(event.pos()):
-            self.clicked.emit()
-            event.accept()
-            return
-        super().mouseReleaseEvent(event)
 
 
 class ToastBalloon(QWidget):
@@ -148,27 +110,14 @@ class FloatingWindow(QWidget):
         )
         self.pill.adjustSize()
 
-        # --- bottom-right badge: [target][☰] -------------------------- #
-        self.badge = QWidget(self)
-        self.badge.setAttribute(Qt.WA_StyledBackground, True)
-        # clicks on the badge body should fall through to the stage (toggle);
-        # the ☰ button inside keeps its own events.
+        # --- bottom-right badge: current target ------------------------ #
+        # a plain QLabel carries its own rounded background (same as the pill)
+        self.badge = QLabel("LaTeX", self)
         self.badge.setAttribute(Qt.WA_TransparentForMouseEvents, True)
         self.badge.setStyleSheet(
-            "background: rgba(10,20,62,205); border-radius: 13px;"
+            "color: white; background: rgba(10,20,62,205); border-radius: 10px;"
+            "padding: 2px 10px; font-size: 10.5px; font-weight: 600;"
         )
-        row = QHBoxLayout(self.badge)
-        row.setContentsMargins(10, 2, 3, 2)
-        row.setSpacing(2)
-        self.target_label = QLabel("LaTeX")
-        self.target_label.setStyleSheet(
-            "color: white; background: transparent; font-size: 10.5px;"
-            "font-weight: 600;"
-        )
-        self.btn_settings = SettingsButton(self.badge)
-        self.btn_settings.clicked.connect(self.settings_requested)
-        row.addWidget(self.target_label)
-        row.addWidget(self.btn_settings)
         self.badge.adjustSize()
 
         # right-click menu
@@ -184,6 +133,7 @@ class FloatingWindow(QWidget):
 
         self.toast = ToastBalloon()
         self._set_pill("sleeping")
+        self.stage.show_static("sleeping")  # initial picture before any toggle
         self.move_to_corner()
 
     # ---------------------------------------------------------------- #
@@ -256,7 +206,7 @@ class FloatingWindow(QWidget):
 
     def set_target_text(self, target: str):
         label = {"latex": "LaTeX", "word": "Word"}.get(target, target)
-        self.target_label.setText(label)
+        self.badge.setText(label)
         self.badge.adjustSize()
         self._place_badge()
 

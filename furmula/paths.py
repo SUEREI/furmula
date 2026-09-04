@@ -1,8 +1,19 @@
-"""Filesystem layout helpers: project root and asset folders."""
-import os
+"""Filesystem layout helpers: project root and asset folders.
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-ASSETS = os.path.join(ROOT, "assets")
+Frozen (PyInstaller) mode: bundled assets live under ``sys._MEIPASS`` while
+user data (data/config.json, logs) stays next to the exe for portability.
+"""
+import os
+import sys
+
+if getattr(sys, "frozen", False):          # running as a PyInstaller bundle
+    ROOT = os.path.dirname(sys.executable)
+    _BASE = sys._MEIPASS                    # dir holding the bundled assets
+else:
+    ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    _BASE = ROOT
+
+ASSETS = os.path.join(_BASE, "assets")
 
 FURINA_VISUAL = os.path.join(ASSETS, "furina_visual")
 FURINA_SOUND = os.path.join(ASSETS, "furina_sound")

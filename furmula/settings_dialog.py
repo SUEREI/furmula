@@ -4,7 +4,7 @@ Fields: API key, Base URL, model + a few basic knobs (temperature, max
 tokens, timeout), formula target (LaTeX / Word), success-sound toggle,
 volume, and an optional system prompt override. Emits ``saved(Config)``.
 """
-from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtCore import Qt, QTimer, pyqtSignal
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (
     QCheckBox,
@@ -189,10 +189,11 @@ class SettingsDialog(QDialog):
         va.addWidget(btn_reset, 0, Qt.AlignRight)
         root.addWidget(box_adv)
 
-        hint = QLabel("配置保存在本机 data\\config.json（跟随应用目录），不会写入代码。")
-        hint.setProperty("dim", True)
-        hint.setWordWrap(True)
-        root.addWidget(hint)
+        self._hint_default = "配置保存在本机 data\\config.json（跟随应用目录），不会写入代码。"
+        self._hint = QLabel(self._hint_default)
+        self._hint.setProperty("dim", True)
+        self._hint.setWordWrap(True)
+        root.addWidget(self._hint)
 
         buttons = QDialogButtonBox()
         btn_cancel = buttons.addButton("取消", QDialogButtonBox.RejectRole)
@@ -240,7 +241,9 @@ class SettingsDialog(QDialog):
             new_cfg.validate()
             self._cfg = new_cfg
             self.saved.emit(new_cfg)
-            self.accept()
+            # keep the dialog open; flash a saved hint on the status label
+            self._hint.setText("已保存")
+            QTimer.singleShot(2000, lambda: self._hint.setText(self._hint_default))
         except Exception:
             from .logging_setup import log_exc
 
